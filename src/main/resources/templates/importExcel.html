@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Read Excel Sheet Names</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<form id="excelForm" action="/importExcel" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" id="input" />
+    <div id="sheetInfo"></div>
+    <input type="submit" value="Submit" id="submitBtn" disabled>
+</form>
+
+<script>
+    document.getElementById('input').addEventListener('change', handleFile, false);
+
+    function handleFile(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetNames = workbook.SheetNames;
+
+            const sheetInfoDiv = document.getElementById('sheetInfo');
+            sheetInfoDiv.innerHTML = `
+                <p>There are ${sheetNames.length} sheets. What sheet do you want to input?</p>
+                <input type="text" name="sheetName" list="sheetNames" required>
+                <datalist id="sheetNames">
+                    ${sheetNames.map(sheetName => `<option value="${sheetName}">`).join('')}
+                </datalist>
+            `;
+
+            document.getElementById('submitBtn').disabled = false;
+      };
+      reader.readAsArrayBuffer(file);
+    }
+</script>
+</body>
+</html>
